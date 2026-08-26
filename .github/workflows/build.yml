@@ -1,0 +1,20 @@
+name: Smart Digital India Build
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Dart Environment
+      uses: dart-lang/setup-dart@v1
+
+    - name: Verify Code and Dependencies
+      run: dart analyze
+      
