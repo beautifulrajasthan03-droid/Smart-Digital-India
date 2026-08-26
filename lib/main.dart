@@ -1,8 +1,8 @@
-// =====================================================================
-// Project: Smart Digital India Pro (GKB) - Production Ready Core
+// ==========================================================
+// Project: Smart Digital India Pro (GKB) - Production Ready Code
 // Developer: Govind Kumar Beragi (GKB)
-// Rule: "Main app dobara bana lunga, par kisi ka paisa nahi dubne dunga!"
-// =====================================================================
+// Rule: "Main app dobara bana lunga, par kisi ka paisa nahi dubaunga"
+// ==========================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,38 +37,26 @@ class SecurityAuthScreen extends StatefulWidget {
 
 class _SecurityAuthScreenState extends State<SecurityAuthScreen> {
   final LocalAuthentication _auth = LocalAuthentication();
-  String _statusText = 'System Secure. Tap below to initiate hardware authentication.';
+  String _statusText = 'System Secure. Tap below to initiate handshake';
   bool _isAuthorized = false;
 
   Future<void> _executeBiometricAuth() async {
     bool authenticated = false;
     try {
-      final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
-      final bool isSupported = await _auth.isDeviceSupported();
-
-      if (canAuthenticateWithBiometrics || isSupported) {
-        authenticated = await _auth.authenticate(
-          localizedReason: 'Verify your identity to access Smart Digital India Pro',
-          options: const AuthenticationOptions(
-            stickyAuth: true,
-            biometricOnly: false,
-          ),
-        );
-      } else {
-        authenticated = true;
-      }
-    } on PlatformException catch (e) {
-      setState(() {
-        _statusText = 'Security Protocol Exception: ${e.message}';
-      });
-      return;
+      authenticated = await _auth.authenticate(
+        localizedReason: 'Please authenticate to access Smart Digital India Pro',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      authenticated = false;
     }
 
     setState(() {
       _isAuthorized = authenticated;
-      _statusText = authenticated
-          ? 'Identity Verified Successfully. Access Granted.'
-          : 'Authentication Restricted. Please Try Again Safely.';
+      _statusText = authenticated ? 'Access Granted: Welcome GKB' : 'Authentication Failed';
     });
   }
 
@@ -76,75 +64,35 @@ class _SecurityAuthScreenState extends State<SecurityAuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Smart Digital India Pro (GKB)'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.amber,
-        centerTitle: true,
+        title: const Text('Smart Digital India Pro - Secure Auth'),
+        backgroundColor: Colors.indigo,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber, width: 2),
-              ),
-              child: const Text(
-                'Jai Baba Kedarnath! | Secure Financial Core',
-                style: TextStyle(
-                  color: Colors.amber,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 30),
-            Icon(
-              _isAuthorized ? Icons.lock_open : Icons.fingerprint,
-              size: 90,
-              color: _isAuthorized ? Colors.green : Colors.black87,
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: _isAuthorized ? Colors.greenAccent : Colors.orangeAccent,
-                  width: 2,
-                ),
-              ),
-              child: Text(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.security, size: 80, color: Colors.indigo),
+              const SizedBox(height: 20),
+              Text(
                 _statusText,
-                style: TextStyle(
-                  color: _isAuthorized ? Colors.greenAccent : Colors.amberAccent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
                 textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.cyanAccent,
-                minimumSize: const Size(double.infinity, 55),
+              const SizedBox(height: 30),
+              ElevatedButton.icon(
+                onPressed: _executeBiometricAuth,
+                icon: const Icon(Icons.fingerprint),
+                label: const Text('Authenticate with Biometrics'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
               ),
-              onPressed: _executeBiometricAuth,
-              icon: const Icon(Icons.security, size: 24),
-              label: const Text(
-                'Authenticate Security Core',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
