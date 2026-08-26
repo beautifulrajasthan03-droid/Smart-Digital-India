@@ -9,12 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup Dart Environment
-      uses: dart-lang/setup-dart@v1
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
 
-    - name: Verify Code and Dependencies
-      run: dart analyze
-      
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Verify Code and Build
+        run: flutter analyze
+
