@@ -20,7 +20,9 @@ jobs:
 
       - name: Install Dependencies
         run: flutter pub get
+        working-directory: Smart-Digital-India
 
       - name: Verify Code and Build
         run: flutter analyze
+        working-directory: Smart-Digital-India
 
