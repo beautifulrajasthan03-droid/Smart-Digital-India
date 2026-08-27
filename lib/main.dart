@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:local_auth/local_auth.h';
+import 'package:local_auth/local_auth.dart';
 
 void main() {
   runApp(const SmartDigitalIndiaApp());
@@ -53,13 +53,11 @@ class _MobileRegistrationScreenState extends State<MobileRegistrationScreen> {
       _isLoading = true;
     });
 
-    // Simulating network verification delay
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         _isLoading = false;
       });
 
-      // Navigate to Step 2 & 3: Security & Biometric Setup
       Navigator.push(
         context,
         MaterialPageRoute(
