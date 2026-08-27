@@ -23,4 +23,4 @@ jobs:
 
       - name: Verify Code and Build
         run: flutter analyze
-        
+
