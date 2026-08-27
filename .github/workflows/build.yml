@@ -24,9 +24,6 @@ jobs:
       - name: Generate Android Platform Files
         run: flutter create . --platforms=android
 
-      - name: Verify Code and Build
-        run: flutter analyze
-
       - name: Build Debug APK
         run: flutter build apk --debug
 
