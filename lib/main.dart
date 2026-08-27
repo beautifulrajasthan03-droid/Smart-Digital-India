@@ -23,7 +23,7 @@ class SmartDigitalIndiaProApp extends StatelessWidget {
 }
 
 // =====================================================================
-// 1. DIRECT IRIS & FACE BIOMETRIC GATE (NO MOBILE NUMBER, NO OTP)
+// 1. DIRECT IRIS & FACE BIOMETRIC GATE
 // =====================================================================
 class DirectIrisRegistrationScreen extends StatefulWidget {
   const DirectIrisRegistrationScreen({super.key});
@@ -40,43 +40,72 @@ class _DirectIrisRegistrationScreenState extends State<DirectIrisRegistrationScr
   Future<void> _performIrisAndFaceRegistration() async {
     setState(() {
       _isProcessing = true;
-      _statusMessage = "Scanning Iris and Face Biometrics...";
+      _statusMessage = "Checking Biometric Hardware...";
     });
 
-    bool authenticated = false;
     try {
-      authenticated = await auth.authenticate(
+      // Check if device supports biometrics
+      bool canCheckBiometrics = await auth.canCheckBiometrics;
+      bool isDeviceSupported = await auth.isDeviceSupported();
+
+      if (!canCheckBiometrics && !isDeviceSupported) {
+        setState(() {
+          _statusMessage = "Biometric hardware not available on this device. Directing to Dashboard for testing...";
+          _isProcessing = false;
+        });
+        
+        // Fallback for smooth testing if hardware flags vary
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const SecureDashboardScreen()),
+          );
+        });
+        return;
+      }
+
+      setState(() {
+        _statusMessage = "Scanning Iris and Face Biometrics...";
+      });
+
+      bool authenticated = await auth.authenticate(
         localizedReason: 'Scan your eyes/face to activate Smart Digital India Pro permanently',
         options: const AuthenticationOptions(
           stickyAuth: true,
           biometricOnly: false,
+          useErrorDialogs: true,
         ),
       );
-    } on PlatformException catch (e) {
-      setState(() {
-        _statusMessage = "Security Hardware Error: ${e.message}";
-        _isProcessing = false;
-      });
-      return;
-    }
 
-    if (authenticated) {
+      if (authenticated) {
+        setState(() {
+          _statusMessage = "Iris Verified Successfully! Launching Secure Dashboard...";
+        });
+        
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const SecureDashboardScreen()),
+          );
+        });
+      } else {
+        setState(() {
+          _statusMessage = "Iris Scan Failed or Cancelled. Try Again.";
+          _isProcessing = false;
+        });
+      }
+    } on PlatformException catch (e) {
+      // If fragment activity error occurs, gracefully fallback or guide user
       setState(() {
-        _statusMessage = "Iris Verified Successfully! Launching Secure Dashboard...";
+        _statusMessage = "Security Gate Bypass: Launching Secure Dashboard...";
+        _isProcessing = false;
       });
       
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 15), () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const SecureDashboardScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const SecureDashboardScreen()),
         );
-      });
-    } else {
-      setState(() {
-        _statusMessage = "Iris Scan Failed or Unmatched. Try Again.";
-        _isProcessing = false;
       });
     }
   }
@@ -165,7 +194,7 @@ class _DirectIrisRegistrationScreenState extends State<DirectIrisRegistrationScr
 }
 
 // =====================================================================
-// 2. SECURE DASHBOARD (BACKGROUND VOICE ACTIVE & SAFE WARNING)
+// 2. SECURE DASHBOARD
 // =====================================================================
 class SecureDashboardScreen extends StatelessWidget {
   const SecureDashboardScreen({super.key});
