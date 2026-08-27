@@ -23,5 +23,4 @@ jobs:
 
       - name: Verify Code and Build
         run: cd Smart-Digital-India && flutter analyze
-
-
+        
