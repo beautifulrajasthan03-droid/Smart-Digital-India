@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         setContentView(R.layout.activity_main)
 
         val btnAuthenticate = findViewById<Button>(R.id.btnAuthenticate)
@@ -33,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    Toast.makeText(applicationContext, "ऑथेंटिकेशन त्रुटि: $errString", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Authentication Error: $errString", Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
@@ -43,21 +42,21 @@ class MainActivity : AppCompatActivity() {
                     vibrator.vibrate(200)
 
                     mainLayout.setBackgroundColor(ContextCompat.getColor(applicationContext, android.R.color.holo_green_light))
-                    tvStatus.text = "सफलता! (Success) - सिस्टम सुरक्षित रूप से एक्टिव है।"
+                    tvStatus.text = "Success - System is active and secure."
                     
-                    Toast.makeText(applicationContext, "बायोमेट्रिक मिलान सफल! सिस्टम अनलॉक हो गया।", Toast.LONG).show()
+                    Toast.makeText(applicationContext, "Biometric match successful! System unlocked.", Toast.LENGTH_LONG).show()
                 }
 
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
-                    Toast.makeText(applicationContext, "बायोमेट्रिक मैच नहीं हुआ। दोबारा कोशिश करें.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Biometric did not match. Try again.", Toast.LENGTH_SHORT).show()
                 }
             })
 
         promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Smart Digital India - सुरक्षा कवच")
-            .setSubtitle("कृपया अपनी पहचान सत्यापित करने के लिए चेहरा या फिंगर स्कैन करें")
-            .setNegativeButtonText("रद्द करें")
+            .setTitle("Smart Digital India - Security Shield")
+            .setSubtitle("Please scan your fingerprint or face to verify your identity")
+            .setNegativeButtonText("Cancel")
             .build()
 
         btnAuthenticate.setOnClickListener {
