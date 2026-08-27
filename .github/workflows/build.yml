@@ -19,8 +19,8 @@ jobs:
           channel: 'stable'
 
       - name: Install Dependencies
-        run: cd Smart-Digital-India && flutter pub get
+        run: flutter pub get
 
       - name: Verify Code and Build
-        run: cd Smart-Digital-India && flutter analyze
+        run: flutter analyze
         
