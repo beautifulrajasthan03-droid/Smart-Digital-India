@@ -1,305 +1,77 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:local_auth/local_auth.dart';
+package com.smartdigitalindia.pro
 
-void main() {
-  runApp(const SmartDigitalIndiaProApp());
-}
+import android.content.Context
+import android.media.MediaPlayer
+import android.os.Bundle
+import android.os.Vibrator
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import java.util.concurrent.Executor
 
-class SmartDigitalIndiaProApp extends StatelessWidget {
-  const SmartDigitalIndiaProApp({super.key});
+class MainActivity : AppCompatActivity() {
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Smart Digital India Pro',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const DirectIrisRegistrationScreen(),
-    );
-  }
-}
+    private lateinit var executor: Executor
+    private lateinit var biometricPrompt: BiometricPrompt
+    private lateinit var promptInfo: BiometricPrompt.PromptInfo
 
-// =====================================================================
-// 1. DIRECT IRIS & FACE BIOMETRIC GATE
-// =====================================================================
-class DirectIrisRegistrationScreen extends StatefulWidget {
-  const DirectIrisRegistrationScreen({super.key});
-
-  @override
-  State<DirectIrisRegistrationScreen> createState() => _DirectIrisRegistrationScreenState();
-}
-
-class _DirectIrisRegistrationScreenState extends State<DirectIrisRegistrationScreen> {
-  final LocalAuthentication auth = LocalAuthentication();
-  String _statusMessage = "Position your eyes/face to establish permanent secure ownership";
-  bool _isProcessing = false;
-
-  Future<void> _performIrisAndFaceRegistration() async {
-    setState(() {
-      _isProcessing = true;
-      _statusMessage = "Checking Biometric Hardware...";
-    });
-
-    try {
-      // Check if device supports biometrics
-      bool canCheckBiometrics = await auth.canCheckBiometrics;
-      bool isDeviceSupported = await auth.isDeviceSupported();
-
-      if (!canCheckBiometrics && !isDeviceSupported) {
-        setState(() {
-          _statusMessage = "Biometric hardware not available on this device. Directing to Dashboard for testing...";
-          _isProcessing = false;
-        });
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         
-        // Fallback for smooth testing if hardware flags vary
-        Future.delayed(const Duration(seconds: 2), () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const SecureDashboardScreen()),
-          );
-        });
-        return;
-      }
+        // यहाँ हम ऐप का लेआउट सेट कर रहे हैं (डैशबोर्ड या रजिस्ट्रेशन स्क्रीन)
+        setContentView(R.layout.activity_main)
 
-      setState(() {
-        _statusMessage = "Scanning Iris and Face Biometrics...";
-      });
+        val btnAuthenticate = findViewById<Button>(R.id.btnAuthenticate)
+        val tvStatus = findViewById<TextView>(R.id.tvStatus)
+        val mainLayout = findViewById<LinearLayout>(R.id.mainLayout)
 
-      bool authenticated = await auth.authenticate(
-        localizedReason: 'Scan your eyes/face to activate Smart Digital India Pro permanently',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: false,
-          useErrorDialogs: true,
-        ),
-      );
+        // सिस्टम का बायोमेट्रिक एग्जीक्यूटर तैयार करना
+        executor = ContextCompat.getMainExecutor(this)
 
-      if (authenticated) {
-        setState(() {
-          _statusMessage = "Iris Verified Successfully! Launching Secure Dashboard...";
-        });
-        
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const SecureDashboardScreen()),
-          );
-        });
-      } else {
-        setState(() {
-          _statusMessage = "Iris Scan Failed or Cancelled. Try Again.";
-          _isProcessing = false;
-        });
-      }
-    } on PlatformException catch (e) {
-      // If fragment activity error occurs, gracefully fallback or guide user
-      setState(() {
-        _statusMessage = "Security Gate Bypass: Launching Secure Dashboard...";
-        _isProcessing = false;
-      });
-      
-      Future.delayed(const Duration(seconds: 15), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SecureDashboardScreen()),
-        );
-      });
+        biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    Toast.makeText(applicationContext, "ऑथेंटिकेशन त्रुटि: $errString", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    
+                    // --- आधार केंद्र जैसी सफलता वाली प्रक्रिया (Success Action) ---
+                    
+                    // 1. फोन में वाइब्रेशन (पक्का फीडबैक)
+                    val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    vibrator.vibrate(200) // 200 मिलीसेकंड का ठोस वाइब्रेशन
+
+                    // 2. स्क्रीन का रंग बदलकर हरा (Success Green) करना और टेक्स्ट बदलना
+                    mainLayout.setBackgroundColor(ContextCompat.getColor(applicationContext, android.R.color.holo_green_light))
+                    tvStatus.text = "सफलता! (Success) - सिस्टम सुरक्षित रूप से एक्टिव है।"
+                    
+                    Toast.makeText(applicationContext, "बायोमेट्रिक मिलान सफल! सिस्टम अनलॉक हो गया।", Toast.LONG).show()
+                }
+
+                override fun onAuthenticationFailed() {
+                    super.onAuthenticationFailed()
+                    Toast.makeText(applicationContext, "बायोमेट्रिक मैच नहीं हुआ। दोबारा कोशिश करें।", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+        // बायोमेट्रिक प्रॉम्प्ट की जानकारी (यूजर को क्या मैसेज दिखेगा)
+        promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Smart Digital India - सुरक्षा कवच")
+            .setSubtitle("कृपया अपनी पहचान सत्यापित करने के लिए चेहरा या आँख/फिंगर स्कैन करें")
+            .setNegativeButtonText("रद्द करें")
+            .build()
+
+        // बटन दबाते ही असली हार्डवेयर सेंसर जागेगा
+        btnAuthenticate.setOnClickListener {
+            biometricPrompt.authenticate(promptInfo)
+        }
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.yellow[700],
-      appBar: AppBar(
-        title: const Text('Smart Digital India Pro'),
-        backgroundColor: Colors.blue[900],
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Icon(
-              Icons.remove_red_eye_rounded,
-              size: 100,
-              color: Colors.blueAccent,
-            ),
-            const SizedBox(height: 25),
-            const Text(
-              'Direct Iris & Face Security Gate',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'No Mobile Number. No OTP. Absolute Privacy.\nScan your eyes once to link your voice commands permanently.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 35),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade900, width: 2),
-              ),
-              child: Text(
-                _statusMessage,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                ),
-              ),
-            ),
-            const SizedBox(height: 35),
-            ElevatedButton.icon(
-              onPressed: _isProcessing ? null : _performIrisAndFaceRegistration,
-              icon: const Icon(Icons.camera_front, size: 26),
-              label: const Text(
-                'Start Iris Scan & Register',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[900],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// =====================================================================
-// 2. SECURE DASHBOARD
-// =====================================================================
-class SecureDashboardScreen extends StatelessWidget {
-  const SecureDashboardScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.yellow[700],
-      appBar: AppBar(
-        title: const Text('Smart Digital India Pro - Protected'),
-        backgroundColor: Colors.green[800],
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 20),
-            const Icon(Icons.verified_user, size: 80, color: Colors.green),
-            const SizedBox(height: 15),
-            const Text(
-              'Security Guard Active! (सुरक्षा कवच सक्रिय है)',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Owner face and eyes are securely registered. Background voice protection is active. Speak your command naturally, and the phone will execute it safely.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
-            ),
-            const SizedBox(height: 40),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade400, width: 1.5),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Settings & Ownership Control',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Only use this if transferring phone ownership permanently.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 15),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red, width: 1.5),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext dialogContext) {
-                          return AlertDialog(
-                            title: const Text(
-                              '⚠️ Important Warning (जरूरी चेतावनी)',
-                              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.red),
-                            ),
-                            content: const Text(
-                              'Press this button ONLY if you are selling or permanently transferring ownership of this phone.\n\n'
-                              'Doing this will delete your registered biometrics and require a fresh registration. Are you sure you want to proceed?',
-                              style: TextStyle(fontSize: 13, height: 1.4),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(dialogContext).pop(),
-                                child: const Text('Cancel (रद्द करें)'),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-                                onPressed: () {
-                                  Navigator.of(dialogContext).pop();
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const DirectIrisRegistrationScreen()),
-                                  );
-                                },
-                                child: const Text('Yes, Reset Owner'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    icon: const Icon(Icons.warning_amber_rounded),
-                    label: const Text('Reset & Change Owner (सावधानी बटन)'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
