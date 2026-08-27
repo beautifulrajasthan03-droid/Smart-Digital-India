@@ -1,11 +1,4 @@
-// ==========================================================
-// Project: Smart Digital India Pro (GKB) - Production Ready Code
-// Developer: Govind Kumar Beragi (GKB)
-// Rule: "Main app dobara bana lunga, par kisi ka paisa nahi dubaunga"
-// ==========================================================
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
 void main() {
@@ -38,7 +31,6 @@ class SecurityAuthScreen extends StatefulWidget {
 class _SecurityAuthScreenState extends State<SecurityAuthScreen> {
   final LocalAuthentication _auth = LocalAuthentication();
   String _statusText = 'System Secure. Tap below to initiate handshake';
-  bool _isAuthorized = false;
 
   Future<void> _executeBiometricAuth() async {
     bool authenticated = false;
@@ -55,7 +47,6 @@ class _SecurityAuthScreenState extends State<SecurityAuthScreen> {
     }
 
     setState(() {
-      _isAuthorized = authenticated;
       _statusText = authenticated ? 'Access Granted: Welcome GKB' : 'Authentication Failed';
     });
   }
