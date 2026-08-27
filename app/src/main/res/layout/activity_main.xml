@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Smart Digital India - सुरक्षा प्रणाली तैयार है"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:gravity="center"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/btnAuthenticate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="बायोमेट्रिक स्कैन शुरू करें"
+        android:textSize="16sp"
+        android:padding="14dp"
+        android:backgroundTint="#1976D2"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>
+
